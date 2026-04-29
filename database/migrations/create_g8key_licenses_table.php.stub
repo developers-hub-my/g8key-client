@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create(config('g8key-client.database_table', 'g8key_licenses'), function (Blueprint $table) {
+            $table->id();
+            $table->uuid('activation_uuid')->unique();
+            $table->text('token');
+            $table->json('payload_json')->nullable();
+            $table->string('status')->default('active');
+            $table->timestamp('last_heartbeat_at')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(config('g8key-client.database_table', 'g8key_licenses'));
+    }
+};
