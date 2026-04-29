@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace G8Key\Client\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class ClientCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'g8key-client';
 
     public $description = 'My command';
 

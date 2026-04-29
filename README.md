@@ -1,69 +1,79 @@
-# :package_description
+# g8key-client
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-<!--delete-->
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
+[![Latest Version](https://img.shields.io/github/v/release/developers-hub-my/g8key-client?style=flat-square)](https://github.com/developers-hub-my/g8key-client/releases)
+[![Packagist Version](https://img.shields.io/packagist/v/developers-hub-my/g8key-client.svg?style=flat-square)](https://packagist.org/packages/developers-hub-my/g8key-client)
+[![License](https://img.shields.io/github/license/developers-hub-my/g8key-client?style=flat-square)](LICENSE.md)
+[![Tests](https://img.shields.io/github/actions/workflow/status/developers-hub-my/g8key-client/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/developers-hub-my/g8key-client/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![Code Style](https://img.shields.io/github/actions/workflow/status/developers-hub-my/g8key-client/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/developers-hub-my/g8key-client/actions?query=workflow%3A%22Fix+PHP+code+style+issues%22+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/developers-hub-my/g8key-client.svg?style=flat-square)](https://packagist.org/packages/developers-hub-my/g8key-client)
 
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Have fun creating your package.
-4. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
----
-<!--/delete-->
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+Shared Laravel client for [G8Key](https://g8key.devhub.my) licensing. Every G8Suite product (G8Stack, G8ID, G8Connect,
+…) installs this package to verify offline EdDSA tokens, run activation and heartbeat against the G8Key server, and
+gate features through a `License` facade and route middleware.
 
-## Support us
+## Features
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/:package_name.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/:package_name)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+- Offline EdDSA token verification mirroring the server-side verifier
+- `php artisan license:activate`, `license:heartbeat`, `license:deactivate`, `license:status`
+- `License` facade with `has()`, `tier()`, `seats()`, `expiresAt()`, `isValid()`
+- Route middleware (`license`, `license.feature:{name}`) and Blade `@licenseFeature` directive
+- Pluggable license store (file or database)
+- Multi-`kid` public-key map for zero-downtime key rotation
 
 ## Installation
 
-You can install the package via composer:
-
 ```bash
-composer require :vendor_slug/:package_slug
+composer require developers-hub-my/g8key-client
+php artisan vendor:publish --tag="g8key-client-config"
 ```
 
-You can publish and run the migrations with:
+If using the database store:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
+php artisan vendor:publish --tag="g8key-client-migrations"
 php artisan migrate
 ```
 
-You can publish the config file with:
+## Quick Start
+
+Configure `.env`:
+
+```env
+G8KEY_AUDIENCE=g8stack
+G8KEY_API_BASE=https://g8key.devhub.my
+G8STACK_LICENSE_PUBLIC_KEY_G8STACK_2026_04=<base64 from G8Key admin>
+```
+
+Activate, schedule, and gate:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-config"
+php artisan license:activate G8ST-K7HM-3PXR-9F2B-WQ8N
 ```
-
-This is the contents of the published config file:
 
 ```php
-return [
-];
+// routes/console.php
+Schedule::command('license:heartbeat')->daily()->withoutOverlapping();
 ```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
-```
-
-## Usage
 
 ```php
-$:variable = new VendorName\Skeleton();
-echo $:variable->echoPhrase('Hello, VendorName!');
+use G8Key\Client\Facades\License;
+
+if (License::has('sso')) {
+    // SSO is on this license tier
+}
 ```
+
+## Documentation
+
+Full documentation lives in [`docs/`](docs/README.md):
+
+- [Getting Started](docs/01-getting-started/README.md) — install, quick start, configuration
+- [Architecture](docs/02-architecture/README.md) — package layout, token format, data flow
+- [Integration](docs/03-integration/README.md) — activation, heartbeat, entitlements, deactivation
+- [Configuration](docs/04-configuration/README.md) — env vars, public keys, stores
+- [Operations](docs/05-operations/README.md) — key rotation, offline grace, troubleshooting
+- [Development](docs/06-development/README.md) — implementation plan, testing, contributing
+- [Decisions](docs/07-decisions/README.md) — architecture decision records
 
 ## Testing
 
@@ -73,21 +83,21 @@ composer test
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+See [docs/06-development/03-contributing.md](docs/06-development/03-contributing.md).
 
-## Security Vulnerabilities
+## Security
 
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
+If you discover a security issue, email <nasrulhazim.m@gmail.com> rather than opening a public issue.
 
 ## Credits
 
-- [:author_name](https://github.com/:author_username)
+- [Nasrul Hazim Bin Mohamad](https://github.com/nasrulhazim)
 - [All Contributors](../../contributors)
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). See [LICENSE.md](LICENSE.md).

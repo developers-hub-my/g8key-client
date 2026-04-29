@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace G8Key\Client;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use VendorName\Skeleton\Commands\SkeletonCommand;
+use G8Key\Client\Commands\ClientCommand;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class ClientServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
@@ -16,10 +16,10 @@ class SkeletonServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
-            ->name('skeleton')
+            ->name('g8key-client')
             ->hasConfigFile()
             ->hasViews()
-            ->hasMigration('create_migration_table_name_table')
-            ->hasCommand(SkeletonCommand::class);
+            ->hasMigration('create_g8key_client_table')
+            ->hasCommand(ClientCommand::class);
     }
 }
