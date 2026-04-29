@@ -34,9 +34,9 @@ it('reports not_activated when the store is empty', function () {
 it('reports active and exposes payload entitlements when token is valid', function () {
     $token = $this->factory->token();
     $this->store->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $token,
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $token,
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 
@@ -54,9 +54,9 @@ it('reports active and exposes payload entitlements when token is valid', functi
 it('reports revoked when the store says so, regardless of the token', function () {
     $token = $this->factory->token();
     $this->store->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $token,
-        'status'            => 'revoked',
+        'activation_uuid' => '01HZTEST',
+        'token' => $token,
+        'status' => 'revoked',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 
@@ -70,9 +70,9 @@ it('reports revoked when the store says so, regardless of the token', function (
 it('reports suspended when the store says so', function () {
     $token = $this->factory->token();
     $this->store->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $token,
-        'status'            => 'suspended',
+        'activation_uuid' => '01HZTEST',
+        'token' => $token,
+        'status' => 'suspended',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 
@@ -86,9 +86,9 @@ it('reports offline_grace when the token expired but heartbeat is recent', funct
     $expiredToken = $this->factory->token(['nbf' => time() - 7200, 'exp' => time() - 3600]);
 
     $this->store->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $expiredToken,
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $expiredToken,
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->subHour()->toIso8601String(),
     ]);
 
@@ -103,9 +103,9 @@ it('reports expired when the token expired and heartbeat is beyond grace', funct
     $expiredToken = $this->factory->token(['nbf' => time() - 7200, 'exp' => time() - 3600]);
 
     $this->store->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $expiredToken,
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $expiredToken,
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->subDays(30)->toIso8601String(),
     ]);
 
@@ -118,9 +118,9 @@ it('reports expired when the token expired and heartbeat is beyond grace', funct
 it('memoizes the verified payload across multiple calls within one request', function () {
     $token = $this->factory->token();
     $this->store->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $token,
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $token,
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 
@@ -129,7 +129,8 @@ it('memoizes the verified payload across multiple calls within one request', fun
         'g8stack',
     );
 
-    $verifier = new class($real) implements TokenVerifier {
+    $verifier = new class($real) implements TokenVerifier
+    {
         public int $calls = 0;
 
         public function __construct(private readonly Verifier $inner) {}

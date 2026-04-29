@@ -21,9 +21,9 @@ class DatabaseLicenseStore implements LicenseStore
         }
 
         return [
-            'activation_uuid'   => $row->activation_uuid,
-            'token'             => $row->token,
-            'status'            => $row->status,
+            'activation_uuid' => $row->activation_uuid,
+            'token' => $row->token,
+            'status' => $row->status,
             'last_heartbeat_at' => (string) $row->last_heartbeat_at,
         ];
     }

@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Env;
+
 return [
 
     /*
@@ -12,7 +14,7 @@ return [
     |
     */
 
-    'audience' => env('G8KEY_AUDIENCE', 'g8stack'),
+    'audience' => Env::get('G8KEY_AUDIENCE', 'g8stack'),
 
     /*
     |--------------------------------------------------------------------------
@@ -20,8 +22,8 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'api_base'    => env('G8KEY_API_BASE', 'https://g8key.devhub.my'),
-    'api_timeout' => (int) env('G8KEY_API_TIMEOUT', 10),
+    'api_base' => Env::get('G8KEY_API_BASE', 'https://g8key.devhub.my'),
+    'api_timeout' => (int) Env::get('G8KEY_API_TIMEOUT', 10),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,7 +36,7 @@ return [
     */
 
     'public_keys' => [
-        // 'g8stack-2026-04' => env('G8STACK_LICENSE_PUBLIC_KEY_G8STACK_2026_04'),
+        // 'g8stack-2026-04' => Env::get('G8STACK_LICENSE_PUBLIC_KEY_G8STACK_2026_04'),
     ],
 
     /*
@@ -48,8 +50,8 @@ return [
     |
     */
 
-    'store'          => env('G8KEY_STORE', 'file'),
-    'cache_path'     => storage_path('app/license.json'),
+    'store' => Env::get('G8KEY_STORE', 'file'),
+    'cache_path' => storage_path('app/license.json'),
     'database_table' => 'g8key_licenses',
 
     /*
@@ -62,7 +64,7 @@ return [
     |
     */
 
-    'offline_grace_days' => (int) env('G8KEY_OFFLINE_GRACE_DAYS', 7),
+    'offline_grace_days' => (int) Env::get('G8KEY_OFFLINE_GRACE_DAYS', 7),
 
     /*
     |--------------------------------------------------------------------------

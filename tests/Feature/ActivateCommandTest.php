@@ -18,7 +18,7 @@ it('activates and persists the verified token on success', function () {
     Http::fake([
         'https://g8key.test/api/v1/g8key/activate' => Http::response([
             'activation_uuid' => '01HZTEST',
-            'token'           => $token,
+            'token' => $token,
         ], 200),
     ]);
 

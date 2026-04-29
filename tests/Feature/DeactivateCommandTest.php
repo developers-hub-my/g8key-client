@@ -13,9 +13,9 @@ beforeEach(function () {
     ]);
 
     app(LicenseStore::class)->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $this->factory->token(),
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(),
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 });

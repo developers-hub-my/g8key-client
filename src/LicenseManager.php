@@ -135,7 +135,7 @@ class LicenseManager
 
         $this->cachedRecord = $record;
 
-        $persistedStatus = $record['status'] ?? 'active';
+        $persistedStatus = $record['status'];
 
         if ($persistedStatus === 'revoked') {
             $this->resolvedStatus = 'revoked';
@@ -162,9 +162,9 @@ class LicenseManager
             return;
         }
 
-        $lastBeat = $record['last_heartbeat_at'] ?? null;
+        $lastBeat = $record['last_heartbeat_at'];
 
-        if (is_string($lastBeat) && $lastBeat !== '') {
+        if ($lastBeat !== '') {
             try {
                 $beatAt = CarbonImmutable::parse($lastBeat);
 

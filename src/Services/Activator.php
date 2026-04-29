@@ -32,7 +32,7 @@ final class Activator
                 ->acceptJson()
                 ->asJson()
                 ->post(rtrim($this->apiBase, '/').'/api/v1/g8key/activate', [
-                    'key'         => $key,
+                    'key' => $key,
                     'fingerprint' => $fingerprint,
                 ]);
         } catch (ConnectionException $e) {
@@ -55,16 +55,16 @@ final class Activator
         $payload = $this->verifier->verify($body['token']);
 
         $this->store->write([
-            'activation_uuid'   => $body['activation_uuid'],
-            'token'             => $body['token'],
-            'status'            => 'active',
+            'activation_uuid' => $body['activation_uuid'],
+            'token' => $body['token'],
+            'status' => 'active',
             'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
         ]);
 
         return [
             'activation_uuid' => $body['activation_uuid'],
-            'token'           => $body['token'],
-            'payload'         => $payload,
+            'token' => $body['token'],
+            'payload' => $payload,
         ];
     }
 }

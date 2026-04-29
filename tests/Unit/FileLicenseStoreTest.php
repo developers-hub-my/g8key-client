@@ -19,9 +19,9 @@ it('returns null when no cache file exists', function () {
 
 it('writes and reads a cache record', function () {
     $record = [
-        'activation_uuid'   => '01HZ...',
-        'token'             => 'eyJ...',
-        'status'            => 'active',
+        'activation_uuid' => '01HZ...',
+        'token' => 'eyJ...',
+        'status' => 'active',
         'last_heartbeat_at' => '2026-04-29T10:00:00+00:00',
     ];
 
@@ -33,9 +33,9 @@ it('writes and reads a cache record', function () {
 
 it('writes the cache file with restrictive permissions', function () {
     $this->store->write([
-        'activation_uuid'   => '01HZ...',
-        'token'             => 'eyJ...',
-        'status'            => 'active',
+        'activation_uuid' => '01HZ...',
+        'token' => 'eyJ...',
+        'status' => 'active',
         'last_heartbeat_at' => '2026-04-29T10:00:00+00:00',
     ]);
 
@@ -45,9 +45,9 @@ it('writes the cache file with restrictive permissions', function () {
 
 it('clears the cache file', function () {
     $this->store->write([
-        'activation_uuid'   => '01HZ...',
-        'token'             => 'eyJ...',
-        'status'            => 'active',
+        'activation_uuid' => '01HZ...',
+        'token' => 'eyJ...',
+        'status' => 'active',
         'last_heartbeat_at' => '2026-04-29T10:00:00+00:00',
     ]);
 

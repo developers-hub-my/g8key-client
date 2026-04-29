@@ -3,6 +3,7 @@
 use Carbon\CarbonImmutable;
 use G8Key\Client\Contracts\LicenseStore;
 use G8Key\Client\Tests\Support\TokenFactory;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
@@ -15,9 +16,9 @@ beforeEach(function () {
     $this->originalToken = $this->factory->token();
 
     app(LicenseStore::class)->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $this->originalToken,
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->originalToken,
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->subDay()->toIso8601String(),
     ]);
 });
@@ -60,7 +61,7 @@ it('flips status to suspended on a 423 response', function () {
 
 it('preserves cache state on network failure', function () {
     Http::fake(function () {
-        throw new Illuminate\Http\Client\ConnectionException('refused');
+        throw new ConnectionException('refused');
     });
 
     $this->artisan('license:heartbeat')->assertSuccessful();

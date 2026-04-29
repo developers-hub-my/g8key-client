@@ -20,9 +20,9 @@ it('exits 1 with not_activated status when no license is cached', function () {
 
 it('exits 0 and prints active details when a valid license is cached', function () {
     app(LicenseStore::class)->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $this->factory->token(),
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(),
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 

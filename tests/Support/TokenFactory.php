@@ -36,14 +36,14 @@ final class TokenFactory
         ], $headerOverrides);
 
         $payload = array_merge([
-            'iss'      => 'g8key.test',
-            'aud'      => 'g8stack',
-            'sub'      => 'activation:test',
-            'iat'      => $now,
-            'nbf'      => $now,
-            'exp'      => $now + 3600,
-            'tier'     => 'pro',
-            'seats'    => 5,
+            'iss' => 'g8key.test',
+            'aud' => 'g8stack',
+            'sub' => 'activation:test',
+            'iat' => $now,
+            'nbf' => $now,
+            'exp' => $now + 3600,
+            'tier' => 'pro',
+            'seats' => 5,
             'features' => ['sso', 'audit_log'],
         ], $payloadOverrides);
 

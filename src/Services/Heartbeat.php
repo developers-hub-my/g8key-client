@@ -42,7 +42,7 @@ final class Heartbeat
                 ->asJson()
                 ->post(rtrim($this->apiBase, '/').'/api/v1/g8key/heartbeat', [
                     'activation_uuid' => $cached['activation_uuid'],
-                    'fingerprint'     => $fingerprint,
+                    'fingerprint' => $fingerprint,
                 ]);
         } catch (ConnectionException) {
             // Network failure: leave cached state untouched. Caller relies on offline_grace_days.
@@ -77,9 +77,9 @@ final class Heartbeat
         $payload = $this->verifier->verify($body['token']);
 
         $this->store->write([
-            'activation_uuid'   => $cached['activation_uuid'],
-            'token'             => $body['token'],
-            'status'            => 'active',
+            'activation_uuid' => $cached['activation_uuid'],
+            'token' => $body['token'],
+            'status' => 'active',
             'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
         ]);
 

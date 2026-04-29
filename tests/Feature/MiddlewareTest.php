@@ -27,9 +27,9 @@ it('returns 403 from license middleware when no license is cached', function () 
 
 it('passes through license middleware when a valid token is cached', function () {
     app(LicenseStore::class)->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $this->factory->token(),
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(),
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 
@@ -40,9 +40,9 @@ it('passes through license middleware when a valid token is cached', function ()
 
 it('returns 403 from license.feature middleware when the feature is not in the token', function () {
     app(LicenseStore::class)->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $this->factory->token(['features' => ['audit_log']]),
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(['features' => ['audit_log']]),
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 
@@ -53,9 +53,9 @@ it('returns 403 from license.feature middleware when the feature is not in the t
 
 it('passes license.feature middleware when the feature is present', function () {
     app(LicenseStore::class)->write([
-        'activation_uuid'   => '01HZTEST',
-        'token'             => $this->factory->token(['features' => ['sso', 'audit_log']]),
-        'status'            => 'active',
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(['features' => ['sso', 'audit_log']]),
+        'status' => 'active',
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 

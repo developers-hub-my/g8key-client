@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isInOfflineGrace()
  * @method static void flush()
  *
- * @see \G8Key\Client\LicenseManager
+ * @see LicenseManager
  */
 class License extends Facade
 {

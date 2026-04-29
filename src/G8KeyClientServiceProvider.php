@@ -16,7 +16,7 @@ use G8Key\Client\Services\Heartbeat;
 use G8Key\Client\Services\Verifier;
 use G8Key\Client\Stores\DatabaseLicenseStore;
 use G8Key\Client\Stores\FileLicenseStore;
-use Illuminate\Contracts\Database\ConnectionResolverInterface;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
@@ -43,7 +43,7 @@ class G8KeyClientServiceProvider extends PackageServiceProvider
     {
         $this->app->singleton(TokenVerifier::class, function ($app) {
             $keys = (array) $app['config']->get('g8key-client.public_keys', []);
-            $aud  = (string) $app['config']->get('g8key-client.audience');
+            $aud = (string) $app['config']->get('g8key-client.audience');
 
             return new Verifier($keys, $aud);
         });

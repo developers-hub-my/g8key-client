@@ -34,7 +34,7 @@ final class Deactivator
                 ->asJson()
                 ->post(rtrim($this->apiBase, '/').'/api/v1/g8key/deactivate', [
                     'activation_uuid' => $cached['activation_uuid'],
-                    'fingerprint'     => $fingerprint,
+                    'fingerprint' => $fingerprint,
                 ]);
         } catch (ConnectionException $e) {
             throw new HeartbeatFailedException("Cannot reach G8Key server: {$e->getMessage()}", previous: $e);

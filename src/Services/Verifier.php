@@ -46,8 +46,8 @@ final class Verifier implements TokenVerifier
 
         $kid = $header['kid'] ?? null;
 
-        if (! is_string($kid) || ! isset($this->publicKeys[$kid]) || $this->publicKeys[$kid] === null) {
-            throw new UnknownKidException("Unknown kid: ".(is_string($kid) ? $kid : 'null'));
+        if (! is_string($kid) || ! isset($this->publicKeys[$kid])) {
+            throw new UnknownKidException('Unknown kid: '.(is_string($kid) ? $kid : 'null'));
         }
 
         $sig = base64_decode(strtr($s, '-_', '+/'), true);
