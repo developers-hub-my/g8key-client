@@ -2,6 +2,7 @@
 
 namespace G8Key\Client\Console;
 
+use G8Key\Client\Exceptions\G8KeyClientException;
 use G8Key\Client\Exceptions\LicenseRevokedException;
 use G8Key\Client\Exceptions\LicenseSuspendedException;
 use G8Key\Client\Services\Heartbeat;
@@ -23,6 +24,10 @@ class HeartbeatCommand extends Command
             return self::FAILURE;
         } catch (LicenseSuspendedException $e) {
             $this->error('License suspended: '.$e->getMessage());
+
+            return self::FAILURE;
+        } catch (G8KeyClientException $e) {
+            $this->error('Heartbeat failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

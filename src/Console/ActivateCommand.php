@@ -2,6 +2,7 @@
 
 namespace G8Key\Client\Console;
 
+use G8Key\Client\Exceptions\G8KeyClientException;
 use G8Key\Client\Services\Activator;
 use Illuminate\Console\Command;
 
@@ -15,7 +16,14 @@ class ActivateCommand extends Command
     {
         $key = (string) $this->argument('key');
 
-        $result = $activator->activate($key);
+        try {
+            $result = $activator->activate($key);
+        } catch (G8KeyClientException $e) {
+            $this->error('Activation failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+
         $payload = $result['payload'];
 
         $this->info('License activated.');

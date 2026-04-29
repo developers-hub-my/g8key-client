@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\CarbonImmutable;
+use G8Key\Client\Contracts\TokenVerifier;
 use G8Key\Client\LicenseManager;
 use G8Key\Client\Services\Verifier;
 use G8Key\Client\Stores\FileLicenseStore;
@@ -123,19 +124,21 @@ it('memoizes the verified payload across multiple calls within one request', fun
         'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
     ]);
 
-    $verifier = new class($this->factory->kid, $this->factory->publicKeyBase64()) extends Verifier {
+    $real = new Verifier(
+        [$this->factory->kid => $this->factory->publicKeyBase64()],
+        'g8stack',
+    );
+
+    $verifier = new class($real) implements TokenVerifier {
         public int $calls = 0;
 
-        public function __construct(string $kid, string $key)
-        {
-            parent::__construct([$kid => $key], 'g8stack');
-        }
+        public function __construct(private readonly Verifier $inner) {}
 
         public function verify(string $token): array
         {
             $this->calls++;
 
-            return parent::verify($token);
+            return $this->inner->verify($token);
         }
     };
 

@@ -2,6 +2,7 @@
 
 namespace G8Key\Client\Console;
 
+use G8Key\Client\Exceptions\G8KeyClientException;
 use G8Key\Client\Services\Deactivator;
 use Illuminate\Console\Command;
 
@@ -19,7 +20,13 @@ class DeactivateCommand extends Command
             return self::SUCCESS;
         }
 
-        $deactivator->deactivate();
+        try {
+            $deactivator->deactivate();
+        } catch (G8KeyClientException $e) {
+            $this->error('Deactivation failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
 
         $this->info('License deactivated.');
 
