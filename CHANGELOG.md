@@ -5,7 +5,31 @@ All notable changes to `g8key-client` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/developers-hub-my/g8key-client/compare/v0.1.0...HEAD)
+## [Unreleased](https://github.com/developers-hub-my/g8key-client/compare/v0.2.0...HEAD)
+
+## [0.2.0](https://github.com/developers-hub-my/g8key-client/compare/v0.1.0...v0.2.0) — 2026-05-02
+
+### Changed
+
+- Default `api_base` is now `https://lic.g8suite.com` (was `https://g8key.devhub.my`). Anyone relying on the default
+  must update or set `G8KEY_API_BASE` explicitly.
+- `composer.json` now requires `orchestra/testbench: ^10.0||^11.0` (was `^9.0.0||^10.0.0`). Covers Laravel 12 via
+  testbench 10.x and Laravel 13 via testbench 11.x.
+
+### Fixed
+
+- CI matrix: dropped PHP 8.3, which the package never supported (composer.json requires `^8.4`); the v0.1.0 push
+  consequently shipped with a failing `run-tests` check on GitHub even though the suite was green locally.
+- CI matrix: added `sodium` to the `setup-php` extensions list. Without it `Verifier` would have aborted on first
+  `sodium_crypto_sign_verify_detached` call in CI.
+- CI matrix: slimmed the extensions list to what the package actually uses
+  (`curl, json, sodium, mbstring, dom, libxml, zip, pdo, sqlite, pdo_sqlite, bcmath, intl, fileinfo`); removed
+  `imagick`, `gd`, `exif`, `soap`, `pcntl`, `iconv`.
+
+### Notes
+
+- v0.1.0 published a working package; this release is primarily a defaults change and a CI repair. Behaviour against
+  custom-configured `api_base` deployments is unchanged.
 
 ## [0.1.0](https://github.com/developers-hub-my/g8key-client/releases/tag/v0.1.0) — 2026-05-02
 
@@ -24,7 +48,6 @@ features through a `License` facade and route middleware.
 - `LicenseStore` contract with two implementations:
   - `FileLicenseStore` (default): JSON at `cache_path` with `LOCK_EX` atomic writes and `chmod 0600`.
   - `DatabaseLicenseStore`: single-row upsert against the publishable `g8key_licenses` migration.
-  
 - Offline EdDSA `Verifier` mirroring the server-side verification order exactly: split → `alg`/`typ`/`kid` →
   signature length guard → sodium verify → `aud`/`nbf`/`exp`.
 - HTTP services: `Activator`, `Heartbeat`, `Deactivator`. Activate POSTs `license_key` (and optional `instance_label`,
@@ -50,22 +73,3 @@ features through a `License` facade and route middleware.
   ADR-0002.
 - Daily heartbeat is the cadence floor — it relies on the server's default 24h token TTL. Lower the heartbeat
   cadence if `g8key.token_ttl_hours` is set below 24 on the server.
-
-## [v0.1.0](https://github.com/developers-hub-my/g8key-client/compare/v0.1.0...v0.1.0) - 2026-05-02
-
-Initial release. Companion client for [G8Key](https://github.com/developers-hub-my/g8key-app); every G8Suite product installs this package to verify offline EdDSA tokens, run activation and heartbeat against the G8Key server, and gate features through a `License` facade and route middleware.
-
-### Highlights
-
-- `License` facade: `tier`, `seats`, `seatsRemaining`, `features`, `has`, `expiresAt`, `customer`, `graceDays`, `fingerprint`, `status`, `isValid`, `isInOfflineGrace`
-- Console: `license:activate`, `license:heartbeat`, `license:deactivate`, `license:status`
-- Route middleware `license` and `license.feature:{name}`; Blade `@licenseFeature` directive
-- `LicenseStore` contract with file (default) and database drivers
-- Pure-PHP EdDSA verifier mirroring server-side check order; multi-`kid` rotation
-- Forward-compat for server `seats_used` claim per ADR-0002
-
-### Compatibility
-
-Requires PHP `^8.4`, Laravel `^11.0 || ^12.0 || ^13.0`, `ext-sodium`, `ext-curl`, `ext-json`.
-
-Full changelog: [CHANGELOG.md](https://github.com/developers-hub-my/g8key-client/blob/v0.1.0/CHANGELOG.md)
