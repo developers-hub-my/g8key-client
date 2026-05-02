@@ -22,17 +22,21 @@ beforeEach(function () {
 
 it('clears the local cache on a successful deactivate', function () {
     Http::fake([
-        'https://g8key.test/api/v1/g8key/deactivate' => Http::response([], 200),
+        'https://g8key.test/api/v1/g8key/deactivate' => Http::response(['message' => 'Activation deactivated.'], 200),
     ]);
 
     $this->artisan('license:deactivate', ['--force' => true])->assertSuccessful();
 
     expect(app(LicenseStore::class)->exists())->toBeFalse();
+
+    Http::assertSent(function ($request) {
+        return $request->hasHeader('Authorization', 'Bearer 01HZTEST');
+    });
 });
 
-it('treats 404 as already deactivated and clears the cache', function () {
+it('treats 401 as already deactivated and clears the cache', function () {
     Http::fake([
-        'https://g8key.test/api/v1/g8key/deactivate' => Http::response([], 404),
+        'https://g8key.test/api/v1/g8key/deactivate' => Http::response(['message' => 'Unauthenticated.'], 401),
     ]);
 
     $this->artisan('license:deactivate', ['--force' => true])->assertSuccessful();

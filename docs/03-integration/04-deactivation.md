@@ -8,11 +8,28 @@ Release an activation back to the server.
 php artisan license:deactivate
 ```
 
+## Wire format
+
+Request — `POST {api_base}/api/v1/g8key/deactivate`:
+
+```http
+Authorization: Bearer 01HZ...     ← the activation_uuid from /activate
+Content-Type: application/json
+
+(empty body)
+```
+
+Response — `200 OK`:
+
+```json
+{ "message": "Activation deactivated." }
+```
+
 ## What it does
 
 1. Reads the cached `activation_uuid`.
-2. POSTs to `{api_base}/api/v1/g8key/deactivate` with the UUID and fingerprint.
-3. On success, clears the local store. The host can no longer read entitlements until re-activated.
+2. POSTs to `/deactivate` with the UUID as the bearer token.
+3. On success — or `401` / `404` (activation already gone server-side) — clears the local store.
 
 ## When to use it
 
@@ -25,7 +42,8 @@ php artisan license:deactivate
 
 ## Idempotency
 
-Deactivating an already-deactivated host is a no-op (server returns `404`; the local store is cleared regardless).
+Deactivating a host whose activation no longer exists server-side returns `401` or `404`; the package treats both as
+already-deactivated and clears the local store regardless.
 
 ## Next Steps
 

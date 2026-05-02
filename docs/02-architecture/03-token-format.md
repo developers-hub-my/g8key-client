@@ -33,28 +33,36 @@ header.payload.signature
 ```json
 {
   "iss": "g8key.devhub.my",
+  "sub": "01HZ...",
   "aud": "g8stack",
-  "sub": "activation:01HZ...",
-  "iat": 1714400000,
-  "nbf": 1714400000,
-  "exp": 1714486400,
+  "customer": "01HZ...",
   "tier": "pro",
   "seats": 5,
   "features": ["sso", "audit_log"],
-  "customer": "01HZ..."
+  "iat": 1714400000,
+  "nbf": 1714400000,
+  "exp": 1714486400,
+  "grace_days": 7,
+  "fingerprint": "sha256:..."
 }
 ```
 
 | Field | Type | Validated |
 |-------|------|-----------|
 | `iss` | string | Informational. |
+| `sub` | string | License UUID. Informational on the client. |
 | `aud` | string | Must equal configured `audience`. |
-| `sub` | string | Activation identifier. Informational on the client. |
+| `customer` | string | Customer UUID. Read by `License::customer()` for telemetry / display. |
+| `tier` | string | Read by `License::tier()`. |
+| `seats` | int | Total seats on the license. Read by `License::seats()`. |
+| `features` | string[] | Read by `License::has()` and `License::features()`. |
 | `nbf` | int (epoch) | `nbf <= now`. |
 | `exp` | int (epoch) | `exp > now`, with offline grace handled by `LicenseManager`. |
-| `tier` | string | Read by `License::tier()`. |
-| `seats` | int | Read by `License::seats()`. |
-| `features` | string[] | Read by `License::has()` and `License::features()`. |
+| `grace_days` | int | Soft-expiry tolerance the SDK applies after `exp`. Read by `License::graceDays()`. |
+| `fingerprint` | string | Activation fingerprint this token is bound to. Read by `License::fingerprint()`. |
+
+`seats_used` is reserved — when the server starts emitting it, `License::seatsRemaining()` returns `seats - seats_used`
+without any client change.
 
 ## Signature
 

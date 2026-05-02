@@ -19,7 +19,8 @@ it('activates and persists the verified token on success', function () {
         'https://g8key.test/api/v1/g8key/activate' => Http::response([
             'activation_uuid' => '01HZTEST',
             'token' => $token,
-        ], 200),
+            'expires_in' => 86400,
+        ], 201),
     ]);
 
     $this->artisan('license:activate', ['key' => 'G8ST-AAAA-BBBB-CCCC-DDDD'])
@@ -34,14 +35,15 @@ it('activates and persists the verified token on success', function () {
 
     Http::assertSent(function ($request) {
         return $request->url() === 'https://g8key.test/api/v1/g8key/activate'
-            && $request['key'] === 'G8ST-AAAA-BBBB-CCCC-DDDD'
-            && is_string($request['fingerprint']);
+            && $request['license_key'] === 'G8ST-AAAA-BBBB-CCCC-DDDD'
+            && is_string($request['fingerprint'])
+            && str_starts_with($request['fingerprint'], 'sha256:');
     });
 });
 
 it('fails when the activate endpoint returns a non-2xx', function () {
     Http::fake([
-        'https://g8key.test/api/v1/g8key/activate' => Http::response(['error' => 'unknown key'], 401),
+        'https://g8key.test/api/v1/g8key/activate' => Http::response(['message' => 'License not found.'], 404),
     ]);
 
     $this->artisan('license:activate', ['key' => 'BAD-KEY'])->assertFailed();

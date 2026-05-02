@@ -7,16 +7,22 @@ How the application reads the verified license payload.
 ```php
 use G8Key\Client\Facades\License;
 
-License::isValid();        // bool
-License::status();         // 'active' | 'expired' | 'revoked' | 'suspended' | 'offline_grace' | 'not_activated'
+License::isValid();          // bool
+License::status();           // 'active' | 'expired' | 'revoked' | 'suspended' | 'offline_grace' | 'not_activated'
+License::isInOfflineGrace(); // bool
 
-License::tier();           // 'pro' | 'enterprise' | …
-License::seats();          // int|null
-License::features();       // string[]
-License::has('sso');       // bool
-License::expiresAt();      // CarbonImmutable|null
-License::activationUuid(); // string|null
-License::payload();        // array|null  (entire decoded payload, for diagnostics)
+License::tier();             // 'pro' | 'enterprise' | …
+License::seats();            // int|null  (total seats on the license)
+License::seatsRemaining();   // int|null  (seats - seats_used; null until server includes seats_used)
+License::features();         // string[]
+License::has('sso');         // bool
+License::expiresAt();        // CarbonImmutable|null
+License::graceDays();        // int|null  (grace_days from token; server-driven)
+
+License::customer();         // string|null  (customer UUID from token, for telemetry)
+License::fingerprint();      // string|null  (activation fingerprint from token)
+License::activationUuid();   // string|null  (local activation_uuid from store)
+License::payload();          // array|null   (entire decoded payload, for diagnostics)
 ```
 
 The payload is verified once per request and memoized.

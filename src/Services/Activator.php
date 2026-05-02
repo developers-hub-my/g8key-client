@@ -20,21 +20,25 @@ final class Activator
     ) {}
 
     /**
+     * @param  array{instance_label?: string, hostname?: string, product_version?: string}  $context
      * @return array{activation_uuid: string, token: string, payload: array<string, mixed>}
      */
-    public function activate(string $key, ?string $fingerprint = null): array
+    public function activate(string $licenseKey, ?string $fingerprint = null, array $context = []): array
     {
-        $fingerprint = Fingerprint::resolve($fingerprint);
+        $body = array_filter([
+            'license_key' => $licenseKey,
+            'fingerprint' => Fingerprint::resolve($fingerprint),
+            'instance_label' => $context['instance_label'] ?? null,
+            'hostname' => $context['hostname'] ?? gethostname() ?: null,
+            'product_version' => $context['product_version'] ?? null,
+        ], fn ($v) => $v !== null && $v !== '');
 
         try {
             $response = $this->http
                 ->timeout($this->timeout)
                 ->acceptJson()
                 ->asJson()
-                ->post(rtrim($this->apiBase, '/').'/api/v1/g8key/activate', [
-                    'key' => $key,
-                    'fingerprint' => $fingerprint,
-                ]);
+                ->post(rtrim($this->apiBase, '/').'/api/v1/g8key/activate', $body);
         } catch (ConnectionException $e) {
             throw new ActivationFailedException("Cannot reach G8Key server: {$e->getMessage()}", previous: $e);
         }
@@ -46,24 +50,24 @@ final class Activator
             );
         }
 
-        $body = $response->json();
+        $responseBody = $response->json();
 
-        if (! is_array($body) || ! isset($body['activation_uuid'], $body['token'])) {
+        if (! is_array($responseBody) || ! isset($responseBody['activation_uuid'], $responseBody['token'])) {
             throw new ActivationFailedException('Activation response missing activation_uuid or token.');
         }
 
-        $payload = $this->verifier->verify($body['token']);
+        $payload = $this->verifier->verify($responseBody['token']);
 
         $this->store->write([
-            'activation_uuid' => $body['activation_uuid'],
-            'token' => $body['token'],
+            'activation_uuid' => $responseBody['activation_uuid'],
+            'token' => $responseBody['token'],
             'status' => 'active',
             'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
         ]);
 
         return [
-            'activation_uuid' => $body['activation_uuid'],
-            'token' => $body['token'],
+            'activation_uuid' => $responseBody['activation_uuid'],
+            'token' => $responseBody['token'],
             'payload' => $payload,
         ];
     }

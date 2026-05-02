@@ -152,3 +152,63 @@ it('memoizes the verified payload across multiple calls within one request', fun
 
     expect($verifier->calls)->toBe(1);
 });
+
+it('exposes customer, graceDays, and fingerprint claims', function () {
+    $token = $this->factory->token([
+        'customer' => '01HCUSTOMER',
+        'grace_days' => 14,
+        'fingerprint' => 'sha256:abc123',
+    ]);
+
+    $this->store->write([
+        'activation_uuid' => '01HZTEST',
+        'token' => $token,
+        'status' => 'active',
+        'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
+    ]);
+
+    $manager = new LicenseManager($this->store, $this->verifier, 7);
+
+    expect($manager->customer())->toBe('01HCUSTOMER');
+    expect($manager->graceDays())->toBe(14);
+    expect($manager->fingerprint())->toBe('sha256:abc123');
+});
+
+it('returns null for seatsRemaining when token has no seats_used claim', function () {
+    $this->store->write([
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(),
+        'status' => 'active',
+        'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
+    ]);
+
+    $manager = new LicenseManager($this->store, $this->verifier, 7);
+
+    expect($manager->seatsRemaining())->toBeNull();
+});
+
+it('computes seatsRemaining when token includes seats_used', function () {
+    $this->store->write([
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(['seats' => 5, 'seats_used' => 3]),
+        'status' => 'active',
+        'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
+    ]);
+
+    $manager = new LicenseManager($this->store, $this->verifier, 7);
+
+    expect($manager->seatsRemaining())->toBe(2);
+});
+
+it('clamps seatsRemaining to zero when seats_used exceeds seats', function () {
+    $this->store->write([
+        'activation_uuid' => '01HZTEST',
+        'token' => $this->factory->token(['seats' => 5, 'seats_used' => 9]),
+        'status' => 'active',
+        'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
+    ]);
+
+    $manager = new LicenseManager($this->store, $this->verifier, 7);
+
+    expect($manager->seatsRemaining())->toBe(0);
+});

@@ -50,6 +50,23 @@ class LicenseManager
         return isset($payload['seats']) ? (int) $payload['seats'] : null;
     }
 
+    /**
+     * Seats still available on this license.
+     *
+     * Requires the server to include `seats_used` in the token payload
+     * (forthcoming). Returns null on tokens that don't carry it.
+     */
+    public function seatsRemaining(): ?int
+    {
+        $payload = $this->payload();
+
+        if (! isset($payload['seats'], $payload['seats_used'])) {
+            return null;
+        }
+
+        return max(0, (int) $payload['seats'] - (int) $payload['seats_used']);
+    }
+
     /** @return list<string> */
     public function features(): array
     {
@@ -78,6 +95,31 @@ class LicenseManager
         }
 
         return CarbonImmutable::createFromTimestamp((int) $payload['exp']);
+    }
+
+    public function customer(): ?string
+    {
+        $payload = $this->payload();
+
+        $customer = $payload['customer'] ?? null;
+
+        return is_string($customer) && $customer !== '' ? $customer : null;
+    }
+
+    public function graceDays(): ?int
+    {
+        $payload = $this->payload();
+
+        return isset($payload['grace_days']) ? (int) $payload['grace_days'] : null;
+    }
+
+    public function fingerprint(): ?string
+    {
+        $payload = $this->payload();
+
+        $fingerprint = $payload['fingerprint'] ?? null;
+
+        return is_string($fingerprint) && $fingerprint !== '' ? $fingerprint : null;
     }
 
     public function activationUuid(): ?string

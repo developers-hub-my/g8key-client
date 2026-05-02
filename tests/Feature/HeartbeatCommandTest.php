@@ -27,7 +27,7 @@ it('refreshes the cached token on a 200 heartbeat', function () {
     $newToken = $this->factory->token(['seats' => 10]);
 
     Http::fake([
-        'https://g8key.test/api/v1/g8key/heartbeat' => Http::response(['token' => $newToken], 200),
+        'https://g8key.test/api/v1/g8key/heartbeat' => Http::response(['token' => $newToken, 'expires_in' => 86400], 200),
     ]);
 
     $this->artisan('license:heartbeat')->assertSuccessful();
@@ -35,11 +35,16 @@ it('refreshes the cached token on a 200 heartbeat', function () {
     $cached = app(LicenseStore::class)->read();
     expect($cached['token'])->toBe($newToken);
     expect($cached['status'])->toBe('active');
+
+    Http::assertSent(function ($request) {
+        return $request->hasHeader('Authorization', 'Bearer 01HZTEST')
+            && $request->url() === 'https://g8key.test/api/v1/g8key/heartbeat';
+    });
 });
 
 it('flips status to revoked on a 410 response', function () {
     Http::fake([
-        'https://g8key.test/api/v1/g8key/heartbeat' => Http::response(['error' => 'revoked'], 410),
+        'https://g8key.test/api/v1/g8key/heartbeat' => Http::response(['message' => 'License revoked.'], 410),
     ]);
 
     $this->artisan('license:heartbeat')->assertFailed();
@@ -50,7 +55,7 @@ it('flips status to revoked on a 410 response', function () {
 
 it('flips status to suspended on a 423 response', function () {
     Http::fake([
-        'https://g8key.test/api/v1/g8key/heartbeat' => Http::response(['error' => 'suspended'], 423),
+        'https://g8key.test/api/v1/g8key/heartbeat' => Http::response(['message' => 'License suspended.'], 423),
     ]);
 
     $this->artisan('license:heartbeat')->assertFailed();

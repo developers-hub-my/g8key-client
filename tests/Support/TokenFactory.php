@@ -38,13 +38,16 @@ final class TokenFactory
         $payload = array_merge([
             'iss' => 'g8key.test',
             'aud' => 'g8stack',
-            'sub' => 'activation:test',
+            'sub' => '01HFAKE-LICENSE-UUID',
+            'customer' => '01HFAKE-CUSTOMER-UUID',
             'iat' => $now,
             'nbf' => $now,
             'exp' => $now + 3600,
             'tier' => 'pro',
             'seats' => 5,
             'features' => ['sso', 'audit_log'],
+            'grace_days' => 7,
+            'fingerprint' => 'sha256:test-fingerprint',
         ], $payloadOverrides);
 
         $h = self::b64url(json_encode($header, JSON_UNESCAPED_SLASHES));

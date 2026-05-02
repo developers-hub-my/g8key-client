@@ -25,7 +25,7 @@ final class Heartbeat
     /**
      * @return array{status: string, payload?: array<string, mixed>}
      */
-    public function pulse(?string $fingerprint = null): array
+    public function pulse(?string $productVersion = null): array
     {
         $cached = $this->store->read();
 
@@ -33,17 +33,18 @@ final class Heartbeat
             throw new NotActivatedException('No cached activation; run license:activate first.');
         }
 
-        $fingerprint = Fingerprint::resolve($fingerprint);
+        $body = array_filter(
+            ['product_version' => $productVersion],
+            fn ($v) => $v !== null && $v !== '',
+        );
 
         try {
             $response = $this->http
+                ->withToken($cached['activation_uuid'])
                 ->timeout($this->timeout)
                 ->acceptJson()
                 ->asJson()
-                ->post(rtrim($this->apiBase, '/').'/api/v1/g8key/heartbeat', [
-                    'activation_uuid' => $cached['activation_uuid'],
-                    'fingerprint' => $fingerprint,
-                ]);
+                ->post(rtrim($this->apiBase, '/').'/api/v1/g8key/heartbeat', $body);
         } catch (ConnectionException) {
             // Network failure: leave cached state untouched. Caller relies on offline_grace_days.
             return ['status' => 'offline'];
@@ -68,17 +69,17 @@ final class Heartbeat
             );
         }
 
-        $body = $response->json();
+        $responseBody = $response->json();
 
-        if (! is_array($body) || ! isset($body['token'])) {
+        if (! is_array($responseBody) || ! isset($responseBody['token'])) {
             throw new HeartbeatFailedException('Heartbeat response missing token.');
         }
 
-        $payload = $this->verifier->verify($body['token']);
+        $payload = $this->verifier->verify($responseBody['token']);
 
         $this->store->write([
             'activation_uuid' => $cached['activation_uuid'],
-            'token' => $body['token'],
+            'token' => $responseBody['token'],
             'status' => 'active',
             'last_heartbeat_at' => CarbonImmutable::now()->toIso8601String(),
         ]);
