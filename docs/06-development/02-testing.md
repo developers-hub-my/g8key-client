@@ -56,7 +56,7 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     Http::fake([
-        'https://g8key.devhub.my/api/v1/g8key/activate' => Http::response([
+        'https://lic.g8suite.com/api/v1/g8key/activate' => Http::response([
             'activation_uuid' => '01HZ...',
             'token'           => fakeSignedToken(/* ... */),
         ], 200),

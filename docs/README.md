@@ -1,7 +1,7 @@
 # Documentation
 
 Documentation for `developers-hub-my/g8key-client` — the shared Laravel client package every G8Suite product
-(G8Stack, G8ID, G8Connect, …) uses to verify licenses issued by [G8Key](https://g8key.devhub.my).
+(G8Stack, G8ID, G8Connect, …) uses to verify licenses issued by [G8Key](https://lic.g8suite.com).
 
 ## Overview
 

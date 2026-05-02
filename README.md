@@ -7,7 +7,7 @@
 [![Code Style](https://img.shields.io/github/actions/workflow/status/developers-hub-my/g8key-client/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/developers-hub-my/g8key-client/actions?query=workflow%3A%22Fix+PHP+code+style+issues%22+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/developers-hub-my/g8key-client.svg?style=flat-square)](https://packagist.org/packages/developers-hub-my/g8key-client)
 
-Shared Laravel client for [G8Key](https://g8key.devhub.my) licensing. Every G8Suite product (G8Stack, G8ID, G8Connect,
+Shared Laravel client for [G8Key](https://lic.g8suite.com) licensing. Every G8Suite product (G8Stack, G8ID, G8Connect,
 …) installs this package to verify offline EdDSA tokens, run activation and heartbeat against the G8Key server, and
 gate features through a `License` facade and route middleware.
 
@@ -40,7 +40,7 @@ Configure `.env`:
 
 ```env
 G8KEY_AUDIENCE=g8stack
-G8KEY_API_BASE=https://g8key.devhub.my
+G8KEY_API_BASE=https://lic.g8suite.com
 G8STACK_LICENSE_PUBLIC_KEY_G8STACK_2026_04=<base64 from G8Key admin>
 ```
 

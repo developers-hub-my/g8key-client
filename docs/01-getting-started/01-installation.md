@@ -45,7 +45,7 @@ Add the minimum set to `.env`:
 
 ```env
 G8KEY_AUDIENCE=g8stack
-G8KEY_API_BASE=https://g8key.devhub.my
+G8KEY_API_BASE=https://lic.g8suite.com
 
 # At least one public key, keyed by kid. The G8Key admin gives you both.
 G8STACK_LICENSE_PUBLIC_KEY_G8STACK_2026_04=base64-encoded-public-key

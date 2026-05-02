@@ -9,7 +9,7 @@
 Single Composer package consumed by every G8Suite product (G8Stack, G8ID, G8Connect, …) for:
 
 - Offline EdDSA token verification (mirror of server-side `TokenVerifier`)
-- Activation, heartbeat, deactivation against `g8key.devhub.my`
+- Activation, heartbeat, deactivation against `lic.g8suite.com`
 - Entitlement checks (`License::has('sso')`, middleware, Blade directive)
 - Pluggable license cache (file or DB)
 - Multi-kid public key support for zero-downtime key rotation
@@ -35,7 +35,7 @@ rather than `env()` to satisfy larastan's `noEnvCallsOutsideOfConfig` rule (the 
 ```php
 return [
     'audience'           => env('G8KEY_AUDIENCE', 'g8stack'),
-    'api_base'           => env('G8KEY_API_BASE', 'https://g8key.devhub.my'),
+    'api_base'           => env('G8KEY_API_BASE', 'https://lic.g8suite.com'),
     'api_timeout'        => env('G8KEY_API_TIMEOUT', 10),
     'public_keys'        => [
         // 'g8stack-2026-04' => env('G8STACK_LICENSE_PUBLIC_KEY_G8STACK_2026_04'),

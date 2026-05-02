@@ -7,7 +7,7 @@ Walk-through of `config/g8key-client.php`.
 ```php
 return [
     'audience'           => env('G8KEY_AUDIENCE', 'g8stack'),
-    'api_base'           => env('G8KEY_API_BASE', 'https://g8key.devhub.my'),
+    'api_base'           => env('G8KEY_API_BASE', 'https://lic.g8suite.com'),
     'api_timeout'        => env('G8KEY_API_TIMEOUT', 10),
     'public_keys'        => [
         // 'g8stack-2026-04' => env('G8STACK_LICENSE_PUBLIC_KEY_G8STACK_2026_04'),

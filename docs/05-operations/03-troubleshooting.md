@@ -18,7 +18,7 @@ prints the kid, audience, and expiry.
 | `License::isValid()` returns false right after activation | Audience mismatch between config and token | Confirm `G8KEY_AUDIENCE` matches the product slug in G8Key admin. |
 | Activation throws `UnknownKidException` | Server signed with a kid not present in `public_keys` map | Add the new kid → public key entry. See [Key Rotation](01-key-rotation.md). |
 | Activation throws `InvalidSignatureException` | Public-key value is wrong (typo, truncation, or wrong product) | Re-copy the key from G8Key admin's product detail page. |
-| Heartbeat keeps failing with `ActivationFailedException` (network) | Firewall / DNS issue reaching `api_base` | Confirm outbound HTTPS to `g8key.devhub.my` is allowed. |
+| Heartbeat keeps failing with `ActivationFailedException` (network) | Firewall / DNS issue reaching `api_base` | Confirm outbound HTTPS to `lic.g8suite.com` is allowed. |
 | `License::status()` returns `revoked` | Server marked the license revoked | Issue a new license through G8Key admin and re-activate. |
 | `License::status()` returns `suspended` | Server marked the license suspended | Coordinate with G8Key admin to un-suspend; next heartbeat clears the state. |
 | `License::status()` returns `offline_grace` | Heartbeat is failing but grace not yet exhausted | Investigate network; run `php artisan license:heartbeat` manually. |

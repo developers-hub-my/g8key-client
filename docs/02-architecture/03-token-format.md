@@ -32,7 +32,7 @@ header.payload.signature
 
 ```json
 {
-  "iss": "g8key.devhub.my",
+  "iss": "lic.g8suite.com",
   "sub": "01HZ...",
   "aud": "g8stack",
   "customer": "01HZ...",

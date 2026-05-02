@@ -22,7 +22,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'api_base' => Env::get('G8KEY_API_BASE', 'https://g8key.devhub.my'),
+    'api_base' => Env::get('G8KEY_API_BASE', 'https://lic.g8suite.com'),
     'api_timeout' => (int) Env::get('G8KEY_API_TIMEOUT', 10),
 
     /*
