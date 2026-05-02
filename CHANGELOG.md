@@ -5,9 +5,9 @@ All notable changes to `g8key-client` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased](https://github.com/developers-hub-my/g8key-client/compare/v0.1.0...HEAD)
 
-## [0.1.0] — 2026-05-02
+## [0.1.0](https://github.com/developers-hub-my/g8key-client/releases/tag/v0.1.0) — 2026-05-02
 
 Initial release. Companion client for [G8Key](https://github.com/developers-hub-my/g8key-app); every G8Suite product
 installs this package to verify offline EdDSA tokens, run activation and heartbeat against the G8Key server, and gate
@@ -24,6 +24,7 @@ features through a `License` facade and route middleware.
 - `LicenseStore` contract with two implementations:
   - `FileLicenseStore` (default): JSON at `cache_path` with `LOCK_EX` atomic writes and `chmod 0600`.
   - `DatabaseLicenseStore`: single-row upsert against the publishable `g8key_licenses` migration.
+  
 - Offline EdDSA `Verifier` mirroring the server-side verification order exactly: split → `alg`/`typ`/`kid` →
   signature length guard → sodium verify → `aud`/`nbf`/`exp`.
 - HTTP services: `Activator`, `Heartbeat`, `Deactivator`. Activate POSTs `license_key` (and optional `instance_label`,
@@ -50,5 +51,21 @@ features through a `License` facade and route middleware.
 - Daily heartbeat is the cadence floor — it relies on the server's default 24h token TTL. Lower the heartbeat
   cadence if `g8key.token_ttl_hours` is set below 24 on the server.
 
-[Unreleased]: https://github.com/developers-hub-my/g8key-client/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/developers-hub-my/g8key-client/releases/tag/v0.1.0
+## [v0.1.0](https://github.com/developers-hub-my/g8key-client/compare/v0.1.0...v0.1.0) - 2026-05-02
+
+Initial release. Companion client for [G8Key](https://github.com/developers-hub-my/g8key-app); every G8Suite product installs this package to verify offline EdDSA tokens, run activation and heartbeat against the G8Key server, and gate features through a `License` facade and route middleware.
+
+### Highlights
+
+- `License` facade: `tier`, `seats`, `seatsRemaining`, `features`, `has`, `expiresAt`, `customer`, `graceDays`, `fingerprint`, `status`, `isValid`, `isInOfflineGrace`
+- Console: `license:activate`, `license:heartbeat`, `license:deactivate`, `license:status`
+- Route middleware `license` and `license.feature:{name}`; Blade `@licenseFeature` directive
+- `LicenseStore` contract with file (default) and database drivers
+- Pure-PHP EdDSA verifier mirroring server-side check order; multi-`kid` rotation
+- Forward-compat for server `seats_used` claim per ADR-0002
+
+### Compatibility
+
+Requires PHP `^8.4`, Laravel `^11.0 || ^12.0 || ^13.0`, `ext-sodium`, `ext-curl`, `ext-json`.
+
+Full changelog: [CHANGELOG.md](https://github.com/developers-hub-my/g8key-client/blob/v0.1.0/CHANGELOG.md)
