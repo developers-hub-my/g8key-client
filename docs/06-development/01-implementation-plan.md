@@ -1,5 +1,6 @@
 # g8key-client — Implementation Plan
 
+> **Status:** Released in v0.1.0 (2026-05-02). Kept as a historical record of how the package was built.
 > Reference: `g8key-app/docs/06-g8key/06-production-integration.md` is the source of truth.
 > This document is the build sheet — phased, file-by-file.
 
@@ -19,20 +20,17 @@ Single Composer package consumed by every G8Suite product (G8Stack, G8ID, G8Conn
 - [x] composer.json keywords cleaned, autoload PSR-4 set
 - [x] Initial classes renamed (`Client.php`, `ClientServiceProvider.php`, `Facades/Client.php`, `Commands/ClientCommand.php`)
 
-## Phase 1 — Composer & runtime requirements
+## Phase 1 — Composer & runtime requirements (DONE)
 
-- [ ] Add to `require`:
-  - `ext-sodium: *` (EdDSA verify)
-  - `ext-curl: *` (HTTP)
-  - `ext-json: *`
-  - `guzzlehttp/guzzle: ^7.8` (or rely on `illuminate/http`)
-  - `ramsey/uuid: ^4.7` (only if not already pulled by Laravel)
-- [ ] Bump min PHP if useful (already `^8.4`)
-- [ ] Drop `hasViews()` from the service provider — package has no views
+- [x] Added to `require`: `ext-sodium`, `ext-curl`, `ext-json`. Relied on `illuminate/http` for HTTP and let
+  Laravel pull `ramsey/uuid` transitively rather than declaring directly.
+- [x] PHP `^8.4` retained.
+- [x] `hasViews()` dropped from the service provider.
 
-## Phase 2 — Config (`config/g8key-client.php`)
+## Phase 2 — Config (`config/g8key-client.php`) (DONE)
 
-Replace empty stub with the canonical shape from the integration doc:
+Replaced empty stub with the canonical shape from the integration doc. Final shape uses `Illuminate\Support\Env::get()`
+rather than `env()` to satisfy larastan's `noEnvCallsOutsideOfConfig` rule (the rule fires on package config files).
 
 ```php
 return [
@@ -50,9 +48,10 @@ return [
 ];
 ```
 
-## Phase 3 — Exceptions (`src/Exceptions/`)
+## Phase 3 — Exceptions (`src/Exceptions/`) (DONE)
 
-Mirror server-side exception types so error mapping is identical on both sides:
+All 12 exception classes shipped under `G8Key\Client\Exceptions`. Mirror server-side exception types so error mapping
+is identical on both sides:
 
 - `G8KeyClientException.php` (base, RuntimeException)
 - `MalformedTokenException.php`
@@ -67,7 +66,7 @@ Mirror server-side exception types so error mapping is identical on both sides:
 - `LicenseSuspendedException.php` (HTTP 423)
 - `NotActivatedException.php` (no token in store)
 
-## Phase 4 — Contracts (`src/Contracts/`)
+## Phase 4 — Contracts (`src/Contracts/`) (DONE)
 
 ```php
 interface LicenseStore {
@@ -82,7 +81,7 @@ interface TokenVerifier {
 }
 ```
 
-## Phase 5 — Stores (`src/Stores/`)
+## Phase 5 — Stores (`src/Stores/`) (DONE)
 
 - `FileLicenseStore.php` — JSON at `cache_path`, atomic writes (`file_put_contents` + `LOCK_EX`), `chmod 0600`
 - `DatabaseLicenseStore.php` — single-row table, upsert by `id=1`
@@ -91,7 +90,7 @@ interface TokenVerifier {
 
 Replace the placeholder migration that the skeleton produced.
 
-## Phase 6 — Verifier (`src/Services/Verifier.php`)
+## Phase 6 — Verifier (`src/Services/Verifier.php`) (DONE)
 
 Direct copy of `app/Services/G8Key/TokenVerifier.php` from the G8Key server, with one difference: pull
 `kid → public_key` from injected array instead of DB.
@@ -106,35 +105,41 @@ Order of checks (must not change):
 6. `aud` matches expected audience
 7. `nbf <= now` and `exp > now`
 
-## Phase 7 — Network services (`src/Services/`)
+## Phase 7 — Network services (`src/Services/`) (DONE)
 
-- `Activator.php`
-  - `activate(string $key, ?string $fingerprint = null): array`
-  - POST `{api_base}/api/v1/g8key/activate` → `{activation_uuid, token}`
-  - On success: verify token, store via `LicenseStore`
-- `Heartbeat.php`
-  - `pulse(): array`
-  - POST `{api_base}/api/v1/g8key/heartbeat` with cached `activation_uuid`
-  - 200 → store fresh token; 410 → throw `LicenseRevokedException`; 423 → throw `LicenseSuspendedException`
-  - Network failure → degraded mode (still readable as long as cached token is in `offline_grace_days`)
-- `Deactivator.php`
-  - `deactivate(): void` — POST `/deactivate`, then `store->clear()`
+Shipped, then re-synced in commit `6125514` against the actual server controllers (g8key-app):
 
-## Phase 8 — LicenseManager (`src/LicenseManager.php`)
+- `Activator.php` — `activate(string $licenseKey, ?string $fingerprint = null, array $context = []): array`. POSTs
+  `license_key` (not `key`) plus optional `instance_label / hostname / product_version` per the server's
+  `ActivateController` validation.
+- `Heartbeat.php` — bearer-token auth (`Authorization: Bearer <activation_uuid>`); body carries optional
+  `product_version` only.
+- `Deactivator.php` — bearer-token auth, empty body. Treats 401 + 404 as already-deactivated and clears the local
+  cache.
+- `Fingerprint.php` — `Fingerprint::compute()` mirrors the server's `App\Services\G8Key\FingerprintGenerator`
+  (sha256 of sorted, lowercased, trimmed JSON of attributes; prefixed `sha256:`).
 
-The binding behind the facade. Lazily verifies the cached token once per request (memoized).
+## Phase 8 — LicenseManager (`src/LicenseManager.php`) (DONE)
+
+The binding behind the facade. Lazily verifies the cached token once per request (memoized). Final API extends the
+plan with `customer()`, `graceDays()`, `fingerprint()`, and `seatsRemaining()`:
 
 ```php
 public function payload(): ?array;
 public function tier(): ?string;
 public function seats(): ?int;
+public function seatsRemaining(): ?int;     // null until server emits seats_used
 public function features(): array;
 public function has(string $feature): bool;
 public function expiresAt(): ?\Carbon\CarbonImmutable;
+public function customer(): ?string;
+public function graceDays(): ?int;
+public function fingerprint(): ?string;
 public function activationUuid(): ?string;
-public function status(): string;          // 'active' | 'expired' | 'revoked' | 'suspended' | 'offline_grace' | 'not_activated'
+public function status(): string;           // 'active' | 'expired' | 'revoked' | 'suspended' | 'offline_grace' | 'not_activated'
 public function isValid(): bool;
 public function isInOfflineGrace(): bool;
+public function flush(): void;              // test affordance
 ```
 
 `isValid()` returns false when:
@@ -143,7 +148,7 @@ public function isInOfflineGrace(): bool;
 - Token expired AND beyond `offline_grace_days` since last heartbeat
 - Cached status is `revoked` or `suspended`
 
-## Phase 9 — Facade (`src/Facades/License.php`)
+## Phase 9 — Facade (`src/Facades/License.php`) (DONE)
 
 Rename `src/Facades/Client.php` → `src/Facades/License.php`:
 
@@ -164,9 +169,9 @@ Update `composer.json` aliases:
 Decide what to do with `src/Client.php` — delete (no purpose) or repurpose as a thin convenience wrapper.
 Recommendation: **delete**.
 
-## Phase 10 — Service provider (`src/G8KeyClientServiceProvider.php`)
+## Phase 10 — Service provider (`src/G8KeyClientServiceProvider.php`) (DONE)
 
-Rename from `ClientServiceProvider`. Wire:
+Renamed from `ClientServiceProvider`. Wired:
 
 - `singleton(TokenVerifier::class)` → `Verifier` constructed with `config('g8key-client.public_keys')` + `config('g8key-client.audience')`
 - `singleton(LicenseStore::class)` → `FileLicenseStore` or `DatabaseLicenseStore` based on `config('g8key-client.store')`
@@ -178,7 +183,7 @@ Rename from `ClientServiceProvider`. Wire:
 - `Blade::if('licenseFeature', fn ($f) => app(LicenseManager::class)->has($f))`
 - `publishes` config + migration with tags `g8key-client-config`, `g8key-client-migrations`
 
-## Phase 11 — Console commands (`src/Console/`)
+## Phase 11 — Console commands (`src/Console/`) (DONE)
 
 | Command | Signature | Purpose |
 | --- | --- | --- |
@@ -189,14 +194,14 @@ Rename from `ClientServiceProvider`. Wire:
 
 `HeartbeatCommand` should be safe under `withoutOverlapping()`.
 
-## Phase 12 — HTTP middleware (`src/Http/Middleware/`)
+## Phase 12 — HTTP middleware (`src/Http/Middleware/`) (DONE)
 
 - `RequireLicense` — `abort(403)` if `LicenseManager::isValid()` is false
 - `RequireFeature` — takes feature name parameter; checks `has($feature)`
 
-## Phase 13 — Tests (`tests/`)
+## Phase 13 — Tests (`tests/`) (DONE)
 
-Tear out the placeholder `ExampleTest`. Build:
+Tore out the placeholder `ExampleTest`. Final suite: 54 tests, 106 assertions, all green.
 
 - `Unit/VerifierTest.php` — happy path + each failure mode (alg, typ, kid, sig length, sig mismatch, aud, nbf, exp).
   Use a real keypair generated in test setup.
@@ -207,11 +212,15 @@ Tear out the placeholder `ExampleTest`. Build:
 - `Feature/MiddlewareTest.php` — 403 paths
 - Expand `ArchTest` to enforce: no debugging functions, no `Illuminate\Http` Facade leak from inside services, etc.
 
-## Phase 14 — Docs polish
+## Phase 14 — Docs polish & release (DONE for v0.1.0)
 
-- Replace `README.md` skeleton text with a real intro + install + activate + facade examples + key rotation runbook
-- Add `CHANGELOG.md` entry for `0.1.0`
-- Cross-link to `g8key-app/docs/06-production-integration.md` for the operator-side flow
+- [x] Replaced `README.md` skeleton text with a real intro + install + activate + facade examples
+- [x] Added `CHANGELOG.md` entry for `v0.1.0`
+- [x] Cross-link to `g8key-app/docs/06-production-integration.md` for the operator-side flow
+- [x] Tag `v0.1.0` cut and pushed
+- Operator follow-ups (not in-repo work):
+  - Submit / refresh on Packagist after first push
+  - Smoke test in a real G8 product against staging
 
 ## File checklist (post-build)
 
@@ -273,15 +282,17 @@ Files to delete after rename:
 
 A tight v0.1.0 covers Phases 1–11 + happy-path tests. Middleware + Blade can land in v0.2.0 if cutting scope.
 
-## Open questions before coding
+## Open questions — resolutions
 
-1. **Fingerprint policy** — what is the canonical fingerprint formula the server expects?
-   (`hash('sha256', app.url + hostname + machine_id)`?) Confirm against the server-side `Activator` controller.
-2. **Heartbeat cadence vs. grace** — doc says daily heartbeat + 7-day offline grace; confirm token TTL on the server.
-   If TTL > 24h, daily heartbeat is overkill; if TTL < 24h, daily is too slow.
-3. **Migration table or single-row JSON?** — `DatabaseLicenseStore` design assumes a single row. If multi-tenant
-   per-process licensing is ever needed, this changes.
-4. **Should the package ship a `License` route group helper** (`Route::license()->group(...)`) or stick with the
-   middleware alias? Middleware is simpler; helper is more Laravel-idiomatic.
-
-Lock these answers before Phase 7.
+1. **Fingerprint policy** — Resolved by inspecting `app/Services/G8Key/FingerprintGenerator` and
+   `app/Http/Controllers/Api/V1/G8Key/ActivateController` in g8key-app. Server validates `fingerprint` as a string
+   ≤ 128 chars but does not recompute or constrain its content. The server's own generator format is
+   `sha256:<sha256-hex>` over a sorted, lowercased, trimmed JSON of input attributes. The client mirrors this exactly
+   in `Fingerprint::compute()`.
+2. **Heartbeat cadence vs. grace** — Resolved. Server defaults `g8key.token_ttl_hours = 24`. Daily heartbeat issues a
+   fresh 24-hour token at the start of each day, leaving the previous token's tail as buffer. Documented in
+   `docs/03-integration/02-heartbeat.md`: if your server lowers TTL below 24h, raise the cadence to match.
+3. **Migration table or single-row JSON?** — Resolved. Single row in v0.1.0. Multi-tenant per-process licensing is not
+   a roadmap requirement. Customers needing it should bind a custom `LicenseStore` implementation.
+4. **Route helper vs. middleware alias?** — Resolved. Middleware aliases (`license`, `license.feature:{name}`) only.
+   The helper would be a thin syntactic sugar layer over the middleware; not worth the API surface in v0.1.0.

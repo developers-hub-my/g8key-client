@@ -35,8 +35,8 @@ Build a shared Composer package.
   discipline and a deprecation window.
 - Local development across products + package. Composer path repositories and `link` workflows are well-trodden but
   add friction relative to inline code.
-- Versioning on the wire. The package and server must agree on the token format. ADR-XXXX (future) will lock down the
-  protocol-versioning policy.
+- Versioning on the wire. The package and server must agree on the token format. See
+  [ADR-0002](02-wire-format-versioning.md) for the protocol-versioning policy.
 
 ## When this would not be the right call
 
