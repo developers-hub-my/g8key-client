@@ -48,6 +48,7 @@ features through a `License` facade and route middleware.
 - `LicenseStore` contract with two implementations:
   - `FileLicenseStore` (default): JSON at `cache_path` with `LOCK_EX` atomic writes and `chmod 0600`.
   - `DatabaseLicenseStore`: single-row upsert against the publishable `g8key_licenses` migration.
+  
 - Offline EdDSA `Verifier` mirroring the server-side verification order exactly: split → `alg`/`typ`/`kid` →
   signature length guard → sodium verify → `aud`/`nbf`/`exp`.
 - HTTP services: `Activator`, `Heartbeat`, `Deactivator`. Activate POSTs `license_key` (and optional `instance_label`,
@@ -73,3 +74,24 @@ features through a `License` facade and route middleware.
   ADR-0002.
 - Daily heartbeat is the cadence floor — it relies on the server's default 24h token TTL. Lower the heartbeat
   cadence if `g8key.token_ttl_hours` is set below 24 on the server.
+
+## [v0.2.0](https://github.com/developers-hub-my/g8key-client/compare/v0.2.0...v0.2.0) - 2026-05-02
+
+Defaults change and CI repair on top of v0.1.0.
+
+### Changed
+
+- Default `api_base` is now `https://lic.g8suite.com` (was `https://g8key.devhub.my`). Anyone relying on the default must update or set `G8KEY_API_BASE` explicitly.
+- `composer.json` requires `orchestra/testbench: ^10.0||^11.0` (was `^9.0.0||^10.0.0`).
+
+### Fixed
+
+- CI matrix dropped PHP 8.3 (composer.json requires `^8.4`); v0.1.0's `run-tests` check failed on GitHub for this reason despite the suite being green locally.
+- CI matrix added `sodium` to the `setup-php` extensions list.
+- CI matrix slimmed the extensions list to what the package actually uses.
+
+### Notes
+
+v0.1.0 published a working package; this release is primarily a defaults change and a CI repair. Behaviour against custom-configured `api_base` deployments is unchanged.
+
+Full changelog: [CHANGELOG.md](https://github.com/developers-hub-my/g8key-client/blob/v0.2.0/CHANGELOG.md)
